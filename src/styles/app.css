@@ -1,0 +1,138 @@
+:root {
+  --bg: #05030f;
+  --ink: #f2edff;
+  --ink-dim: #b9aedf;
+  --violet: #8f63ff;
+  --violet-deep: #4b25b8;
+  --lavender: #cdbbff;
+  --glass: rgba(16, 10, 40, 0.62);
+  --glass-border: rgba(180, 150, 255, 0.22);
+  --ok: #7dffc4;
+  --danger: #ff6b8b;
+  font-family: Inter, 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); overflow: hidden; }
+button { font: inherit; color: inherit; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.app {
+  position: relative;
+  height: 100%;
+  background: radial-gradient(ellipse at 50% 30%, #140a3a 0%, #070416 55%, #030209 100%);
+}
+
+/* ---------- stage: camera + effect layers, always the camera's aspect ratio ---------- */
+.stage-frame { position: absolute; inset: 0; display: grid; place-items: center; }
+.stage { position: relative; width: 640px; height: 360px; overflow: hidden; background: #000; opacity: 0; transition: opacity 0.6s ease; }
+.stage.is-live { opacity: 1; }
+.video, .layer, .grade { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* The preview is mirrored like a mirror; vision output is already converted to match. */
+.video { object-fit: fill; transform: scaleX(-1); filter: brightness(0.8) saturate(0.88) contrast(1.05); }
+.layer { pointer-events: none; }
+/* Subtle violet grade + vignette so light effects stay visible without hiding the user. */
+.grade {
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 45%, rgba(8, 3, 30, 0.55) 100%),
+    linear-gradient(180deg, rgba(60, 30, 140, 0.16), rgba(10, 5, 40, 0.3));
+  mix-blend-mode: multiply;
+}
+
+/* ---------- start / error screens ---------- */
+.start { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; background: radial-gradient(ellipse at 50% 20%, #1b0f52 0%, #080419 60%, #030209 100%); z-index: 10; overflow: auto; }
+.starfield { position: absolute; inset: 0; pointer-events: none; opacity: 0.9;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 28% 72%, #cdbbff, transparent),
+    radial-gradient(2px 2px at 44% 30%, #fff, transparent), radial-gradient(1px 1px at 63% 82%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 77% 22%, #cdbbff, transparent), radial-gradient(1px 1px at 90% 58%, #fff, transparent),
+    radial-gradient(2px 2px at 8% 88%, #cdbbff, transparent), radial-gradient(1px 1px at 55% 8%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 35% 50%, #fff, transparent), radial-gradient(1px 1px at 84% 90%, #fff, transparent);
+  animation: twinkle 5s ease-in-out infinite alternate;
+}
+@keyframes twinkle { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .starfield { animation: none; } }
+
+.start-card { position: relative; width: min(520px, 100%); text-align: center; padding: 36px 32px 28px; border-radius: 22px; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(14px); box-shadow: 0 0 80px rgba(120, 70, 235, 0.25); }
+.logo-mark { color: var(--lavender); filter: drop-shadow(0 0 14px rgba(160, 120, 255, 0.9)); }
+.start-card h1 { margin: 6px 0 0; font-size: 46px; font-weight: 300; letter-spacing: 0.42em; padding-left: 0.42em; text-shadow: 0 0 24px rgba(170, 130, 255, 0.8); }
+.start-card h2 { margin: 0 0 8px; font-size: 24px; font-weight: 500; }
+.tagline { margin: 4px 0 18px; color: var(--lavender); letter-spacing: 0.3em; text-transform: uppercase; font-size: 12px; padding-left: 0.3em; }
+.lead { color: var(--ink-dim); line-height: 1.55; margin: 0 0 18px; }
+.how { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 8px; text-align: left; color: var(--ink-dim); font-size: 14px; counter-reset: step; }
+.how li { counter-increment: step; padding-left: 38px; position: relative; min-height: 28px; display: flex; align-items: center; }
+.how li::before { content: counter(step); position: absolute; left: 0; top: -1px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; background: rgba(143, 99, 255, 0.25); border: 1px solid var(--glass-border); color: var(--ink); }
+.how b { color: var(--ink); font-weight: 600; }
+.privacy { margin: 18px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-dim); }
+.mock-note { margin: 10px 0 0; font-size: 12px; color: var(--ok); }
+.steps { text-align: left; color: var(--ink-dim); line-height: 1.55; padding-left: 20px; margin: 0 0 22px; }
+.start-card.error { border-color: rgba(255, 107, 139, 0.4); }
+.start-card.error h2 { color: #ffd1dc; }
+
+.btn { cursor: pointer; border: 1px solid var(--glass-border); background: rgba(40, 24, 90, 0.6); padding: 9px 16px; border-radius: 999px; font-size: 14px; transition: background 0.15s, transform 0.1s, box-shadow 0.15s; }
+.btn:hover:not(:disabled) { background: rgba(80, 50, 170, 0.7); }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn.primary { background: linear-gradient(135deg, #7a4be0, #4b25b8); border-color: rgba(205, 187, 255, 0.5); box-shadow: 0 0 22px rgba(130, 80, 240, 0.45); }
+.btn.primary:hover:not(:disabled) { background: linear-gradient(135deg, #9066f5, #5c32d4); }
+.start-card .btn.primary { padding: 13px 30px; font-size: 16px; }
+.btn:focus-visible, .sign:focus-visible, .icon-btn:focus-visible, .link:focus-visible { outline: 2px solid var(--lavender); outline-offset: 2px; }
+
+/* ---------- HUD ---------- */
+.hud { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 14px 16px 16px; z-index: 5; }
+.hud > * { pointer-events: auto; }
+.hud-top { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+.cam-indicator, .status-pills .pill, .gesture-badge, .hint, .sign-block, .icon-btn, .panel, .toast { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
+.cam-indicator { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; font-size: 13px; }
+.rec { width: 9px; height: 9px; border-radius: 50%; background: #ff4d6d; box-shadow: 0 0 10px #ff4d6d; animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.45; } }
+.link { background: none; border: none; text-decoration: underline; color: var(--lavender); cursor: pointer; padding: 0 0 0 4px; font-size: 13px; }
+.status-pills { display: flex; gap: 8px; flex: 1; justify-content: center; flex-wrap: wrap; }
+.pill { padding: 5px 11px; border-radius: 999px; font-size: 12.5px; color: var(--ink-dim); }
+.pill.ok { color: var(--ok); border-color: rgba(125, 255, 196, 0.35); }
+.pill.mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+.icon-btn { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 18px; display: grid; place-items: center; }
+.icon-btn.on { background: rgba(110, 70, 220, 0.6); }
+.settings-wrap { position: absolute; top: 62px; right: 16px; }
+.panel.settings { display: grid; gap: 12px; padding: 14px 16px; border-radius: 16px; width: 320px; }
+.panel.settings label { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; cursor: pointer; font-size: 14px; }
+.panel.settings label.settings-name { grid-template-columns: 1fr; gap: 6px; cursor: default; }
+.panel.settings .settings-name input { width: 100%; margin: 0; padding: 8px 10px; border: 1px solid var(--glass-border); border-radius: 9px; background: rgba(3, 2, 12, 0.55); color: var(--ink); font: inherit; }
+.panel.settings .settings-name input:focus-visible { outline: 2px solid var(--lavender); outline-offset: 2px; }
+.panel.settings small { display: block; color: var(--ink-dim); margin-top: 2px; font-size: 12px; line-height: 1.35; }
+.panel.settings input { accent-color: var(--violet); margin-top: 3px; }
+
+.gesture-badge { position: absolute; top: 66px; left: 16px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-size: 13px; color: var(--ink-dim); overflow: hidden; }
+.gesture-badge .dot { width: 9px; height: 9px; border-radius: 50%; background: #5d5280; }
+.gesture-badge.g-star { color: #fff; border-color: rgba(255, 255, 255, 0.55); }
+.gesture-badge.g-star .dot { background: #fff; box-shadow: 0 0 10px #fff; }
+.gesture-badge.g-draw { color: #fff; border-color: rgba(190, 170, 255, 0.8); }
+.gesture-badge.g-draw .dot { background: var(--violet); box-shadow: 0 0 12px var(--violet); }
+.gesture-badge .conf { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--lavender); }
+
+.toast { position: absolute; left: 50%; top: 70px; transform: translateX(-50%); padding: 10px 18px; border-radius: 14px; font-size: 14px; max-width: min(560px, 90vw); text-align: center; animation: toast-in 0.3s ease; }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, -8px); } }
+
+.hud-bottom { display: grid; gap: 10px; justify-items: center; }
+.hint { padding: 8px 18px; border-radius: 999px; font-size: 14px; margin: 0; text-align: center; max-width: 92vw; }
+.controls { display: flex; gap: 12px; align-items: flex-end; justify-content: space-between; width: 100%; flex-wrap: wrap; }
+.sign-block { display: grid; gap: 8px; padding: 10px 12px; border-radius: 18px; }
+.sign-name { font-size: 14px; display: flex; align-items: baseline; gap: 6px; }
+.sign-name .glyph { font-size: 20px; color: var(--lavender); }
+.sign-name small { color: var(--ink-dim); margin-left: 6px; font-size: 12px; }
+.signs { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; }
+.sign { cursor: pointer; width: 32px; height: 32px; border-radius: 9px; border: 1px solid transparent; background: rgba(255, 255, 255, 0.05); display: grid; place-items: center; }
+.sign .glyph { font-size: 17px; line-height: 1; }
+.sign:hover:not(:disabled) { background: rgba(143, 99, 255, 0.3); }
+.sign.on { background: rgba(143, 99, 255, 0.55); border-color: var(--lavender); box-shadow: 0 0 14px rgba(143, 99, 255, 0.6); }
+.sign:disabled { opacity: 0.45; cursor: default; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+@media (max-width: 760px) {
+  .signs { grid-template-columns: repeat(6, 1fr); }
+  .hud-top .status-pills { display: none; }
+  .start-card h1 { font-size: 36px; }
+}
